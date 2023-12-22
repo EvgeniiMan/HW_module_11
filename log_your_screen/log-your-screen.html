@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            padding: 10px;
+            text-align: center;
+            background-color: aquamarine;
+            border: none;
+            border-radius: 10px;
+            font-size: 20px;
+
+            &:hover {
+                cursor: pointer;
+            }
+
+            &:active {
+                border: 2px solid black;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button>Узнать размер экрана!</button>
+
+    <script>
+        const btn = document.querySelector("button");
+        btn.addEventListener('click', () => {
+            alert(`Ширина экрана: ${window.screen.width}\nВысота экрана: ${window.screen.height}`);
+        });
+    </script>
+</body>
+</html>

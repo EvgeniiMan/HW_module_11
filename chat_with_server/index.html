@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Общение с сервером</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <section class="start-wrap">
+        <h1>Общение с сервером</h1>
+        <div class="start__buttons">
+            <button id="start">Открыть соединение</button>
+            <button id="stop">Закрыть соединение</button>
+        </div>
+    </section>
+    <section class="send-message-wrap">
+        <input id="textarea-with-message" type="text" placeholder="Здесь вводится текст сообщения">      
+        <button id="send-message">Отправить</button>
+        <button id="send-location">Гео-локация</button>   
+    </section>
+    <div class="messages">
+    </div>
+
+    <script>
+        const wsUri = "wss://echo.websocket.org/";
+
+        const btnOpen = document.getElementById("start");
+        const btnClose = document.getElementById("stop");
+
+        const sendMsgWrap = document.querySelector(".send-message-wrap");
+        const msgs = document.querySelector(".messages");
+        const msg = document.getElementById("textarea-with-message");
+        const btnSend = document.getElementById("send-message");
+        const btnLocation = document.getElementById("send-location");
+
+        let websocket;
+
+        btnOpen.addEventListener('click', () => {
+            websocket = new WebSocket(wsUri);
+            websocket.onopen = function(evt) {
+                console.log("CONNECTED");
+                sendMsgWrap.style.display = "flex";
+                msgs.style.display = "flex";
+            };
+            websocket.onmessage = function(evt) {
+                if(evt.data.includes("Request served"))
+                    return;
+                if(evt.data.includes("https://www.openstreetmap.org/#map=18/"))
+                    return;
+                writeToScreen(evt.data, "answer")
+            }
+            websocket.onerror = function(evt) {
+                console.log(evt.data);
+            }
+            websocket.onclose = function(evt) {
+                console.log("DISCONNECTED");
+                sendMsgWrap.style.display = "none";
+                msgs.style.display = "none";
+            }
+        });
+
+        btnClose.addEventListener('click', () => {
+            websocket.close();
+            websocket = null;
+        });
+
+        btnSend.addEventListener('click', () => {
+            if (msg.value === '') {
+                return alert("Сообщение не должно быть пустым!");
+            }
+            const message = msg.value;
+            writeToScreen(message, "send");
+            websocket.send(message);
+        });
+
+        btnLocation.addEventListener('click', () => {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    let msg = `https://www.openstreetmap.org/#map=18/${position.coords.latitude}/${position.coords.longitude}`;
+
+                    writeToScreen(msg, "position");
+                    websocket.send(msg);
+                });
+            }
+            
+        })
+
+
+
+        function writeToScreen(message, type) {
+            let pre = document.createElement("p");
+            switch(type){
+                case "send":
+                    
+                    pre.classList.add("message", "send-message");
+                    pre.innerText = message;
+                    break;
+                case "answer":
+                    
+                    pre.classList.add("message", "answer-message");
+                    pre.innerText = message;
+                    break;
+                case "position":
+                    
+                    pre.classList.add("message", "send-message");
+                    pre.innerHTML = `<a href="${message}" target="_BLANK">Гео-локация</a>`;
+                    break;
+                default: 
+                    console.log(message);
+                    break;
+            }
+            
+            
+            msgs.appendChild(pre);
+        }
+        
+    </script>
+</body>
+</html>
